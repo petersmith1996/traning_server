@@ -1,0 +1,163 @@
+{
+    "messageId": 19,
+    "value": {
+        "intersections": [
+            {
+                "id": {
+                    "id": 476,
+                    "region": 476
+                },
+                "moy": 424962,
+                "revision": 1,
+                "states": [
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "STRAIGHT",
+                        "signalGroup": 1,
+                        "state-time-speed": [
+                            {
+                                "eventState": "stop-And-Remain",
+                                "timing": {
+                                    "minEndTime": 20
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "LEFT",
+                        "signalGroup": 2,
+                        "state-time-speed": [
+                            {
+                                "eventState": "stop-And-Remain",
+                                "timing": {
+                                    "minEndTime": 770
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "STRAIGHT",
+                        "signalGroup": 3,
+                        "state-time-speed": [
+                            {
+                                "eventState": "permissive-clearance",
+                                "timing": {
+                                    "minEndTime": 20
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "LEFT",
+                        "signalGroup": 4,
+                        "state-time-speed": [
+                            {
+                                "eventState": "permissive-clearance",
+                                "timing": {
+                                    "minEndTime": 20
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "STRAIGHT",
+                        "signalGroup": 5,
+                        "state-time-speed": [
+                            {
+                                "eventState": "stop-And-Remain",
+                                "timing": {
+                                    "minEndTime": 20
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "LEFT",
+                        "signalGroup": 6,
+                        "state-time-speed": [
+                            {
+                                "eventState": "stop-And-Remain",
+                                "timing": {
+                                    "minEndTime": 770
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "STRAIGHT",
+                        "signalGroup": 7,
+                        "state-time-speed": [
+                            {
+                                "eventState": "stop-And-Remain",
+                                "timing": {
+                                    "minEndTime": 1170
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "maneuverAssistList": [
+                            {
+                                "connectionID": 0,
+                                "pedBicycleDetect": false
+                            }
+                        ],
+                        "movementName": "LEFT",
+                        "signalGroup": 8,
+                        "state-time-speed": [
+                            {
+                                "eventState": "stop-And-Remain",
+                                "timing": {
+                                    "minEndTime": 1170
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "status": "0400",
+                "timeStamp": 28408
+            }
+        ]
+    }
+}

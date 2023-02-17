@@ -1,0 +1,140 @@
+{
+	"timeStamp": 0,
+	"msgIssueRevision": 0,
+	"layerType": 0,
+	"layerID": 0,
+	"intersections": [
+		{
+			"id" : {
+				"region": 0,
+				"id": 0
+			},
+			"revision": 0,
+			"refPoint":	{
+				"lat": 0,
+				"Long": 0,
+				"elevation": 0
+			},
+			"laneWidth": 0,
+			"speedLimits":[
+				{
+					"type": 0,
+					"speed": 0
+				}
+			],
+			"laneSet":[
+				{
+					"laneID" : 0,
+					"ingressApproach" : 0,
+					"egressApproach" : 0,
+					"laneAttributes": {
+						"directionalUse": 0,
+						"sharedWith": 0,
+						"laneType":{
+							"type":"vehicle",
+							"val":0
+						},
+						"maneuvers":0,
+						"nodeList":{
+							"type":"nodes",
+							"val":[
+								{
+									"delta":{
+										"type":"node_XY1",
+										"val":{
+											"x":0,
+											"y":0
+										}	
+									},
+									"attributes":{
+										"localNode":[
+											0
+										],
+										"disabled":[
+											0
+										],
+										"enabled":[
+											0
+										],
+										"data":[
+											0
+										],
+										"dWidth":0,
+										"dElevation":0
+									}
+								}
+							]
+						}
+					},
+					"connectsTo":[
+						{
+							"connectingLane":{
+								"lane":0,
+								"maneuvers":0
+							},
+							"remoteIntersection":{
+								"region":0,
+								"id":0
+							},
+							"signalGroup":0,
+							"userClass":0,
+							"connectionID":0
+						}
+					],
+					"overlays":[
+						0
+					]
+				}
+			],
+			"preemptPriorityData":[
+				null
+			],
+			"roadAuthorityID":{
+				"type":"fullRdAuthID",
+				"val":{
+					"length":8,
+					"value":"abcdefgh"
+				}
+			}
+		}
+	],
+	"roadSegments":[
+		{
+			"name":"abc",
+			"id":{
+				"region":0,
+				"id":0
+			},
+			"revision":0,
+			"refPoint":{
+				"lat":0,
+				"Long":0,
+				"elevation":0
+			},
+			"laneWidth":0,
+			"speedLimits":[
+				{
+					"type": 0,
+					"speed": 0
+				}
+			],
+			"roadLaneSet":0
+		}
+	],
+	"dataParameters":{
+		"processMethod":"abcd",
+		"processAgency":"abcd",
+		"lastCheckedDate":"abcd",
+		"geoidUsed":"abcd"
+	},
+	"restrictionList":[
+		{
+			"id":0,
+			"users":[
+				{
+					"basicType":0
+				}
+			]
+		}
+	]	
+}

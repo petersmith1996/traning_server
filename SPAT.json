@@ -1,0 +1,75 @@
+{
+	"timeStamp": 0,
+	"name": "DescriptiveName",
+	"intersections":[
+		{
+			"name":"DescriptiveName",
+			"id" : {
+				"region": 0,
+				"id": 0
+			},
+			"revision": 0,
+			"status": 32768,
+			"moy": 0,
+			"timeStamp": 0,
+			"enabledLanes":[
+				0, 
+				0, 
+				0
+			],
+			"states":[
+				{
+					"movementName": "movementName",
+					"signalGroup": 0,
+					"state_time_speed": [
+						{
+							"eventState": 0,
+							"timimg": {
+								"startTime": 0,
+								"minEndTime": 0,
+								"maxEndTime": 0,
+								"likelyTime": 0,
+								"confidence": 0,
+								"nextTime": 0
+							},
+							"speeds":[
+								{
+									"type": 0,
+									"speed": 0,
+									"confidence": 0,
+									"distance": 0,
+									"Class": 0
+								}
+							]
+						}
+					],
+					"maneuverAssistList":[
+						{
+							"connectionID": 0,
+							"queueLength": 0,
+							"availableStorageLength": 0,
+							"waitOnStop": true,
+							"pedBicycleDetect": true 
+						}
+					]
+				}
+			],
+			"maneuverAssistList":[
+				{
+					"connectionID": 0,
+					"queueLength": 0,
+					"availableStorageLength": 0,
+					"waitOnStop": true,
+					"pedBicycleDetect": true 
+				}
+			],
+			"roadAuthorityID":{
+				"type":"fullRdAuthID",
+				"val":{
+					"length":19,
+					"value":"FullRoadAuthorityID"
+				}
+			}
+		}
+	]
+}

@@ -1,0 +1,205 @@
+{
+    "messageId": 20,
+    "value": {
+        "coreData": {
+            "accelSet": {
+                "lat": 2001,
+                "long": 2001,
+                "vert": -127,
+                "yaw": 0
+            },
+            "accuracy": {
+                "orientation": 65535,
+                "semiMajor": 144,
+                "semiMinor": 68
+            },
+            "angle": 127,
+            "brakes": {
+                "abs": "unavailable",
+                "auxBrakes": "unavailable",
+                "brakeBoost": "unavailable",
+                "scs": "unavailable",
+                "traction": "unavailable",
+                "wheelBrakes": "80"
+            },
+            "elev": 603,
+            "heading": 26609,
+            "id": "7001FD52",
+            "lat": 364831535,
+            "long": 1272605463,
+            "msgCnt": 108,
+            "secMark": 49083,
+            "size": {
+                "length": 492,
+                "width": 186
+            },
+            "speed": 0,
+            "transmission": "unavailable"
+        },
+        "partII": [
+            {
+                "partII-Id": 0,
+                "partII-Value": {
+                    "pathHistory": {
+                        "crumbData": [
+                            {
+                                "elevationOffset": -37,
+                                "latOffset": -1537,
+                                "lonOffset": 538,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -34,
+                                "latOffset": -2855,
+                                "lonOffset": 1288,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -33,
+                                "latOffset": -4057,
+                                "lonOffset": 2163,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -33,
+                                "latOffset": -5365,
+                                "lonOffset": 3102,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -34,
+                                "latOffset": -6580,
+                                "lonOffset": 3995,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -40,
+                                "latOffset": -7802,
+                                "lonOffset": 4808,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -43,
+                                "latOffset": -8997,
+                                "lonOffset": 5637,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -45,
+                                "latOffset": -10415,
+                                "lonOffset": 6638,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -47,
+                                "latOffset": -11649,
+                                "lonOffset": 7538,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -48,
+                                "latOffset": -13087,
+                                "lonOffset": 8597,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -47,
+                                "latOffset": -14359,
+                                "lonOffset": 9505,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -48,
+                                "latOffset": -15632,
+                                "lonOffset": 10408,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -49,
+                                "latOffset": -16847,
+                                "lonOffset": 11275,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -49,
+                                "latOffset": -18145,
+                                "lonOffset": 12232,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -48,
+                                "latOffset": -19329,
+                                "lonOffset": 13122,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -49,
+                                "latOffset": -20532,
+                                "lonOffset": 14015,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -47,
+                                "latOffset": -21690,
+                                "lonOffset": 14885,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -48,
+                                "latOffset": -22959,
+                                "lonOffset": 15838,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -49,
+                                "latOffset": -24180,
+                                "lonOffset": 16708,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -49,
+                                "latOffset": -25444,
+                                "lonOffset": 17637,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -44,
+                                "latOffset": -26629,
+                                "lonOffset": 18498,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -47,
+                                "latOffset": -27915,
+                                "lonOffset": 19140,
+                                "timeOffset": 65535
+                            },
+                            {
+                                "elevationOffset": -49,
+                                "latOffset": -29120,
+                                "lonOffset": 19977,
+                                "timeOffset": 65535
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "partII-Id": 1,
+                "partII-Value": {
+                    "description": {
+                        "typeEvent": 0
+                    }
+                }
+            },
+            {
+                "partII-Id": 2,
+                "partII-Value": {
+                    "classDetails": {
+                        "vehicleType": "cars"
+                    }
+                }
+            }
+        ]
+    }
+}
