@@ -123,6 +123,7 @@ public:
         recv_thread.join();
         cout << "worker kill recv thread" << endl;
 
+        pthread_cancel(H_send);
         send_thread.join();
         cout << "send_thread end" << endl;
 
@@ -145,85 +146,138 @@ public:
         clock_gettime(CLOCK_MONOTONIC, &begin);
         clock_gettime(CLOCK_MONOTONIC, &end);
         while(1){
-            if (CD->sign_succ){
-                if(((end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec) / 1000000000.0)<1){
-                    clock_gettime(CLOCK_MONOTONIC, &end);
-                }
-                else{
-                    clock_gettime(CLOCK_MONOTONIC, &begin);
-                    try{
-                        memset(msg, 0x0, sizeof(msg));
-                        /*
-                        St_SERVER_OR_CLIENT_JSON_DATA json_data_SPAT = messageProcessor::set_JSON_DATA_SPAT();
+            //try{
+                if (CD->sign_succ){
+                    if(((end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec) / 1000000000.0)<1){
+                        clock_gettime(CLOCK_MONOTONIC, &end);
+                    }
+                    else{
+                        clock_gettime(CLOCK_MONOTONIC, &begin);
+                        try{
+                            memset(msg, 0x0, sizeof(msg));
+                            /*
+                            St_SERVER_OR_CLIENT_JSON_DATA json_data_SPAT = messageProcessor::set_JSON_DATA_SPAT();
 
-                        uint8_t* serial_Json_DATA = (uint8_t*)messageProcessor::serialize_JSON_DATA(json_data_SPAT);
-                        int serial_Json_DATA_Length = HEADER_SIZE + json_data_SPAT.header.PayloadLength;
-                        */
+                            uint8_t* serial_Json_DATA = (uint8_t*)messageProcessor::serialize_JSON_DATA(json_data_SPAT);
+                            int serial_Json_DATA_Length = HEADER_SIZE + json_data_SPAT.header.PayloadLength;
+                            */
 
-                        St_SIMULATOR_TX_J2735_DATA data = messageProcessor::set_SIMULATOR_TX_DATA(MESSAGE_ID_VALUE_MAP);
-                        int data_size = MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG + data.payload.EncodedMessageLength;
+                            St_SIMULATOR_TX_J2735_DATA data = messageProcessor::set_SIMULATOR_TX_DATA(MESSAGE_ID_VALUE_MAP);
+                            int data_size = MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG + data.payload.EncodedMessageLength;
 
-                        uint8_t* serial_DATA = (uint8_t*)malloc(data_size);
+                            uint8_t* serial_DATA = (uint8_t*)malloc(data_size);
 
-                        memcpy(serial_DATA, &data, MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG);
-                        memcpy(serial_DATA + MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG, data.payload.EncodedMessage, data.payload.EncodedMessageLength);
+                            memcpy(serial_DATA, &data, MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG);
+                            memcpy(serial_DATA + MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG, data.payload.EncodedMessage, data.payload.EncodedMessageLength);
 
-                        //printf("send EncodedMessage:\n");
-                        //for(int i = 0; i<4; i++){
-                            //printf("%02x", *(serial_DATA + MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG+i) );
-                        //}
+                            //printf("send EncodedMessage:\n");
+                            //for(int i = 0; i<4; i++){
+                                //printf("%02x", *(serial_DATA + MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG+i) );
+                            //}
+                            //printf("\n");
 
-                        int ret = send(CD->sock, serial_DATA, data_size, MSG_NOSIGNAL);
-                        if (ret < 0){
-                            perror("send error");
-                            throw -1;
+                            int ret = send(CD->sock, serial_DATA, data_size, MSG_NOSIGNAL);
+
+                            if (ret < 0){
+                                perror("send error");
+                                throw -1;
+                                break;
+                            }
+                            else{
+                                //cout << "send: " << msg << endl;
+                                CD->send_log.push_back(msg);
+                                string log;
+                                log = "send-"+(string)(msg);
+                                msgLog[CD->ID].push_back(log);
+
+                                string tmp = getUtcTimeStr() + " send: " + CD->ID + " " + (string)msg;
+                                whole_log.push_back(tmp);
+                                CD -> seq++;
+                            }
+                        }
+                        catch(int expn){
+                            cout << "send error" << endl;
                             break;
                         }
-                        else{
-                            //cout << "send: " << msg << endl;
-                            CD->send_log.push_back(msg);
-                            string log;
-                            log = "send-"+(string)(msg);
-                            msgLog[CD->ID].push_back(log);
+                        try{
+                            memset(msg, 0x0, sizeof(msg));
+                            /*
+                            St_SERVER_OR_CLIENT_JSON_DATA json_data_SPAT = messageProcessor::set_JSON_DATA_SPAT();
 
-                            string tmp = getUtcTimeStr() + " send: " + CD->ID + " " + (string)msg;
-                            whole_log.push_back(tmp);
-                            CD -> seq++;
+                            uint8_t* serial_Json_DATA = (uint8_t*)messageProcessor::serialize_JSON_DATA(json_data_SPAT);
+                            int serial_Json_DATA_Length = HEADER_SIZE + json_data_SPAT.header.PayloadLength;
+                            */
+
+                            St_SIMULATOR_TX_J2735_DATA data = messageProcessor::set_SIMULATOR_TX_DATA(MESSAGE_ID_VALUE_SPAT);
+                            int data_size = MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG + data.payload.EncodedMessageLength;
+
+                            uint8_t* serial_DATA = (uint8_t*)malloc(data_size);
+
+                            memcpy(serial_DATA, &data, MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG);
+                            memcpy(serial_DATA + MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG, data.payload.EncodedMessage, data.payload.EncodedMessageLength);
+
+                            //printf("send EncodedMessage:\n");
+                            //for(int i = 0; i<4; i++){
+                                //printf("%02x", *(serial_DATA + MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG+i) );
+                            //}
+                            //printf("\n");
+
+                            int ret = send(CD->sock, serial_DATA, data_size, MSG_NOSIGNAL);
+
+                            if (ret < 0){
+                                perror("send error");
+                                throw -1;
+                                break;
+                            }
+                            else{
+                                //cout << "send: " << msg << endl;
+                                CD->send_log.push_back(msg);
+                                string log;
+                                log = "send-"+(string)(msg);
+                                msgLog[CD->ID].push_back(log);
+
+                                string tmp = getUtcTimeStr() + " send: " + CD->ID + " " + (string)msg;
+                                whole_log.push_back(tmp);
+                                CD -> seq++;
+                            }
+                        }
+                        catch(int expn){
+                            cout << "send error" << endl;
+                            break;
                         }
                     }
-                    catch(int expn){
-                        cout << "send error" << endl;
+                }
+                else{
+                    if (CD->sign){
+                        uint8_t code;
+                        uint16_t serviceFlag;
+                        code = 0x00;
+                        serviceFlag = 0x81;
+                        St_SERVER_OR_SIMULATOR_SIGN_ACK ack = messageProcessor::set_ACK(code, serviceFlag);
+                        uint8_t* msg = (uint8_t*)malloc(sizeof(MESSAGEFRAME_SIZE_ACK));
+                        memcpy(msg, &ack, MESSAGEFRAME_SIZE_ACK);
+                        int ret = send(CD->sock, msg, MESSAGEFRAME_SIZE_ACK, MSG_NOSIGNAL);
+                        CD->sign_succ = true;
+                    }
+                    else if(CD->denied){
+                        uint8_t code;
+                        uint16_t serviceFlag;
+                        code = 0x01;
+                        serviceFlag = 0x00;
+                        St_SERVER_OR_SIMULATOR_SIGN_ACK ack = messageProcessor::set_ACK(code, serviceFlag);
+                        uint8_t* msg = (uint8_t*)malloc(sizeof(MESSAGEFRAME_SIZE_ACK));
+                        memcpy(msg, &ack, MESSAGEFRAME_SIZE_ACK);
+                        int ret = send(CD->sock, msg, MESSAGEFRAME_SIZE_ACK, MSG_NOSIGNAL);
+                        CD->sign_succ = false;
+                        printf("server sign deny\n");
                         break;
                     }
-                }
-            }
-            else{
-                if (CD->sign){
-                    uint8_t code;
-                    uint16_t serviceFlag;
-                    code = 0x00;
-                    serviceFlag = 0x81;
-                    St_SERVER_OR_SIMULATOR_SIGN_ACK ack = messageProcessor::set_ACK(code, serviceFlag);
-                    uint8_t* msg = (uint8_t*)malloc(sizeof(MESSAGEFRAME_SIZE_ACK));
-                    memcpy(msg, &ack, MESSAGEFRAME_SIZE_ACK);
-                    int ret = send(CD->sock, msg, MESSAGEFRAME_SIZE_ACK, MSG_NOSIGNAL);
-                    CD->sign_succ = true;
-                }
-                else if(CD->denied){
-                    uint8_t code;
-                    uint16_t serviceFlag;
-                    code = 0x01;
-                    serviceFlag = 0x00;
-                    St_SERVER_OR_SIMULATOR_SIGN_ACK ack = messageProcessor::set_ACK(code, serviceFlag);
-                    uint8_t* msg = (uint8_t*)malloc(sizeof(MESSAGEFRAME_SIZE_ACK));
-                    memcpy(msg, &ack, MESSAGEFRAME_SIZE_ACK);
-                    int ret = send(CD->sock, msg, MESSAGEFRAME_SIZE_ACK, MSG_NOSIGNAL);
-                    CD->sign_succ = false;
-                    printf("server sign deny\n");
-                    break;
-                }
 
-            }
+                }
+            //}
+            //catch(int expn){
+
+            //}
             
         }
         //printf("client %d sending stopped by something\n", CD->clnt_cnt);

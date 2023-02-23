@@ -21,7 +21,7 @@
                         "signalGroup": 1,
                         "state-time-speed": [
                             {
-                                "eventState": "stop-And-Remain",
+                                "eventState": "stop-And-Remain", //R
                                 "timing": {
                                     "minEndTime": 20
                                 }
@@ -39,7 +39,7 @@
                         "signalGroup": 2,
                         "state-time-speed": [
                             {
-                                "eventState": "stop-And-Remain",
+                                "eventState": "stop-And-Remain", //R
                                 "timing": {
                                     "minEndTime": 770
                                 }
@@ -57,7 +57,7 @@
                         "signalGroup": 3,
                         "state-time-speed": [
                             {
-                                "eventState": "permissive-clearance",
+                                "eventState": "permissive-clearance", //Y
                                 "timing": {
                                     "minEndTime": 20
                                 }
@@ -75,7 +75,7 @@
                         "signalGroup": 4,
                         "state-time-speed": [
                             {
-                                "eventState": "permissive-clearance",
+                                "eventState": "permissive-clearance", //Y
                                 "timing": {
                                     "minEndTime": 20
                                 }
@@ -93,7 +93,7 @@
                         "signalGroup": 5,
                         "state-time-speed": [
                             {
-                                "eventState": "stop-And-Remain",
+                                "eventState": "stop-And-Remain", //R
                                 "timing": {
                                     "minEndTime": 20
                                 }
@@ -111,7 +111,7 @@
                         "signalGroup": 6,
                         "state-time-speed": [
                             {
-                                "eventState": "stop-And-Remain",
+                                "eventState": "stop-And-Remain", //R
                                 "timing": {
                                     "minEndTime": 770
                                 }
@@ -129,7 +129,7 @@
                         "signalGroup": 7,
                         "state-time-speed": [
                             {
-                                "eventState": "stop-And-Remain",
+                                "eventState": "stop-And-Remain", //R
                                 "timing": {
                                     "minEndTime": 1170
                                 }
@@ -147,7 +147,7 @@
                         "signalGroup": 8,
                         "state-time-speed": [
                             {
-                                "eventState": "stop-And-Remain",
+                                "eventState": "stop-And-Remain", //R
                                 "timing": {
                                     "minEndTime": 1170
                                 }

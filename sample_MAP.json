@@ -7,6 +7,19 @@
                     "id": 476,
                     "region": 476
                 },
+                "laneWidth": 300,
+                "refPoint": {
+                    "elevation": 331,
+                    "lat": 364792360,
+                    "long": 1272631390
+                },
+                "revision": 1,
+                "speedLimits": [
+                    {
+                        "speed": 833,
+                        "type": "vehicleMaxSpeed"
+                    }
+                ],
                 "laneSet": [
                     {
                         "connectsTo": [
@@ -2250,19 +2263,6 @@
                                 }
                             ]
                         }
-                    }
-                ],
-                "laneWidth": 300,
-                "refPoint": {
-                    "elevation": 331,
-                    "lat": 364792360,
-                    "long": 1272631390
-                },
-                "revision": 1,
-                "speedLimits": [
-                    {
-                        "speed": 833,
-                        "type": "vehicleMaxSpeed"
                     }
                 ]
             }

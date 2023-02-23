@@ -3,6 +3,7 @@
 #include "utcTime.h"
 #include "const.h"
 #include <iostream>
+#include <sys/time.h>
 
 using namespace std;
 
@@ -200,7 +201,8 @@ public:
 
         St_SIMULATOR_TX_J2735_DATA sim_tx;
 
-        sim_tx.payload.UTCTime = set_UTCTime_default();
+        //sim_tx.payload.UTCTime = set_UTCTime_default();
+        sim_tx.payload.UTCTime = set_UTCTime();
         sim_tx.payload.MessageID = ID;
         sim_tx.payload.EncodedMessage = (uint8_t*)malloc(sizeof(uint8_t)*4);
         sim_tx.payload.EncodedMessage[0] = 0x11;
@@ -570,6 +572,26 @@ public:
         UTCTime.hour = 1;
         UTCTime.min = 1;
         UTCTime.msec = 1;
+
+        return UTCTime;
+    }
+
+    static St_UTCTime set_UTCTime(){
+        St_UTCTime UTCTime;
+
+        struct timeval time_now{};
+        gettimeofday(&time_now, nullptr);
+
+        time_t msecs_time = ((time_now.tv_sec * 1000) + (time_now.tv_usec / 1000))%60000;
+
+        struct tm* gm_time = gmtime(&time_now.tv_sec);
+
+        UTCTime.year = (uint16_t)gm_time->tm_year + 1900;
+        UTCTime.month = (uint8_t)gm_time->tm_mon + 1;
+        UTCTime.day = (uint8_t)gm_time->tm_mday;
+        UTCTime.hour = (uint8_t)gm_time->tm_hour;
+        UTCTime.min = (uint8_t)gm_time->tm_min;
+        UTCTime.msec = (uint16_t)msecs_time;
 
         return UTCTime;
     }

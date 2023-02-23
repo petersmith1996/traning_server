@@ -31,6 +31,9 @@ using namespace std;
 char tmp[669]= "001480FA5B1C007F54AFEEE5B1E617DB921E8B092DC8227FFFF00067F1FDFA1FA1007FFF80005D0F6202031882C0FCFFC0434FB7FFFC0FA6CC0A10FBDFFFC0F813C10E6FBFFFFC0F585C183CFBFFFFC0F32641F36FBDFFFC0F0C342590FB1FFFC0EE6DC2C0AFABFFFC0EBA8C33DCFA7FFFC0E93FC3AE4FA3FFFC0E670C432AFA1FFFC0E3F4C4A42FA3FFFC0E17845150FA1FFFC0DF18C5816F9FFFFC0DC8FC5F90F9FFFFC0DA3FC6684FA1FFFC0D7E646D7EF9FFFFC0D5A34744AFA3FFFC0D328C7BBCFA1FFFC0D0C648288F9FFFFC0CE4E489CAF9FFFFC0CBFDC9084FA9FFFC0C97AC9588FA3FFFC0C72049C12F9FFFFC00104200000000810800200C000003014082805773B9B9C6A9F3298083F616926CF279828FEDC49D81849DB36ACC3A1031CDBDCB33C0800A48031D07BF3AD6F14C452052048CBA8A95559B8ECB8F30DD1318DD385CB6F0264EA06879B2";;
 uint8_t encodedMessage_sample[334];
 
+json_object* JO_MAP;
+json_object* JO_SPAT;
+
 std::string getUtcTimeStr(){
     time_t now = time(0);
     tm* now_tm = gmtime(&now);
@@ -40,10 +43,10 @@ std::string getUtcTimeStr(){
     return utc_time;
 }
 
-
 vector<pair<int, uint8_t*>> sim_tx_buf;
 mutex m_sim_tx_buf;
 vector<pair<int, uint8_t*>> ser_tx_buf;
+mutex m_ser_tx_buf;
 
 class clientData{
 public:
@@ -59,6 +62,8 @@ public:
     vector<string> send_log;
     vector<uint8_t*> send_buf;
     mutex m_send_buf;
+    uint8_t pre_recv_seq;
+    uint8_t pre_send_seq;
 };
 
 class clientManager{
@@ -168,34 +173,45 @@ public:
 
                 St_Payload_SIMULATOR_TX_J2735_DATA payload = messageProcessor::parse_SIMULATOR_TX_payload(payload_buf);
 
+                free(payload_buf);
+                payload_buf = nullptr;
 
                 uint8_t* buf;
 
                 if (header.MessageType == MESSAGE_TYPE_SIMULATOR_TX_J2735_DATA){
+                    St_Header json_header;
                     St_Payload_JSON json_payload;
-                    json_payload.UTCTime = payload.UTCTime;
-                    json_payload.MessageID = payload.MessageID;
-                    json_payload.JsonMessage = (uint8_t*)malloc(payload.EncodedMessageLength);
-                    memcpy(json_payload.JsonMessage, payload.EncodedMessage, payload.EncodedMessageLength);
-                    json_payload.JsonMessageLength = payload.EncodedMessageLength;
 
+                    if (payload.MessageID == MESSAGE_ID_VALUE_MAP){
+                        json_payload.UTCTime = payload.UTCTime;
+                        json_payload.MessageID = payload.MessageID;
+                        const char* str_MAP = json_object_to_json_string(JO_MAP);
+                        json_payload.JsonMessage = (uint8_t*)malloc(strlen(str_MAP));
+                        memcpy(json_payload.JsonMessage, str_MAP, strlen(str_MAP));
+                        json_payload.JsonMessageLength = strlen(str_MAP);
+                    }
+                    else if (payload.MessageID == MESSAGE_ID_VALUE_SPAT){
+                        json_payload.UTCTime = payload.UTCTime;
+                        json_payload.MessageID = payload.MessageID;
+                        const char* str_SPAT = json_object_to_json_string(JO_SPAT);
+                        json_payload.JsonMessage = (uint8_t*)malloc(strlen(str_SPAT));
+                        memcpy(json_payload.JsonMessage, str_SPAT, strlen(str_SPAT));
+                        json_payload.JsonMessageLength = strlen(str_SPAT);
+                    }
 
-                    St_Header json_header = messageProcessor::set_header(
+                    json_header = messageProcessor::set_header(
                                                             MESSAGE_TYPE_SERVER_OR_CLIENT_JSON_DATA,
                                                             header.Sequence,
                                                             PAYLOAD_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG + json_payload.JsonMessageLength,
                                                             DEVICE_TYPE_SERVER,
                                                             DEVID
                                                             );
-                    buf = (uint8_t*)malloc(MESSAGEFRAME_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG + json_payload.JsonMessageLength);
-                    memcpy(buf, &json_header, HEADER_SIZE);
-                    memcpy(buf+HEADER_SIZE, &json_payload, PAYLOAD_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG);
 
                     //for(int i = 0; i<334; i++){
                         //printf("%02x", encodedMessage_sample[i]);
                     //}
 
-
+                    buf = (uint8_t*)malloc(MESSAGEFRAME_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG + json_payload.JsonMessageLength);
 
                     memcpy(buf+HEADER_SIZE+PAYLOAD_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG, json_payload.JsonMessage, json_payload.JsonMessageLength);
 
@@ -204,16 +220,32 @@ public:
                         //printf("%02x", buf[i]);
                     //}
                     //printf("\n");
+
+                    for (auto elem = clientMap.begin(); elem!=clientMap.end(); elem++){
+                        json_header.Sequence = ++(elem->second->pre_send_seq);
+
+                        memcpy(buf, &json_header, HEADER_SIZE);
+                        memcpy(buf+HEADER_SIZE, &json_payload, PAYLOAD_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG);
+
+                        elem->second->m_send_buf.lock();
+                        elem->second->send_buf.emplace_back(buf);
+                        elem->second->m_send_buf.unlock();
+                    }
+                    free(json_payload.JsonMessage);
+                    json_payload.JsonMessage = nullptr;
                 }
 
                 //uint8_t* buf = (uint8_t*)malloc(MESSAGEFRAME_SIZE_SIMULATOR_TX_WITHOUT_MSG + payload.EncodedMessageLength);
 
-                for (auto elem = clientMap.begin(); elem!=clientMap.end(); elem++){
-                    elem->second->m_send_buf.lock();
-                    elem->second->send_buf.emplace_back(buf);
-                    elem->second->m_send_buf.unlock();
-                }
-                sim_tx_buf.erase(iter);
+                free((uint8_t*)sim_tx_buf.at(0).second);
+                sim_tx_buf.at(0).second = nullptr;
+                //if(sim_tx_buf.at(0).second == nullptr){
+                    //printf("sim_tx_buf free complete\n");
+                //}
+
+                //printf("[after free] sim_tx_buf: %0x\n", sim_tx_buf.at(0).second);
+
+                sim_tx_buf.erase(sim_tx_buf.begin());
             }
         }
     }
@@ -237,19 +269,25 @@ public:
                         try{
                             int ret;
                             memset(msg, 0x0, sizeof(msg));
+                            uint8_t* payload_buf;
                             //printf("[send]1 send_buf size: %ld\n", CD->send_buf.size());
                             St_Header header = messageProcessor::parse_header(CD->send_buf.at(0));
 
                             if(header.MessageType == MESSAGE_TYPE_SERVER_OR_SIMULATOR_SIGN_ACK){
-                                uint8_t* payload_buf = (uint8_t*)malloc(PAYLOAD_SIZE_ACK);
+                                CD->pre_send_seq = 0;
+                                payload_buf = (uint8_t*)malloc(PAYLOAD_SIZE_ACK);
                                 memcpy(payload_buf, CD->send_buf.at(0) + 9, PAYLOAD_SIZE_ACK);
                                 St_Payload_ACK ack = messageProcessor::parse_Payload_ACK(payload_buf);
-                                ret = send(CD->sock, CD->send_buf.at(0), MESSAGEFRAME_SIZE_ACK, MSG_NOSIGNAL);                                
+                                free(payload_buf);
+                                payload_buf = nullptr;
+                                ret = send(CD->sock, CD->send_buf.at(0), MESSAGEFRAME_SIZE_ACK, MSG_NOSIGNAL);
                             }
                             else if(header.MessageType == MESSAGE_TYPE_SERVER_OR_CLIENT_JSON_DATA){
-                                uint8_t* payload_buf = (uint8_t*)malloc(header.PayloadLength);
+                                payload_buf = (uint8_t*)malloc(header.PayloadLength);
                                 memcpy(payload_buf, CD->send_buf.at(0) + HEADER_SIZE, header.PayloadLength);
                                 St_Payload_JSON payload = messageProcessor::parse_json_payload(payload_buf);
+                                free(payload_buf);
+                                payload_buf = nullptr;
 
                                 int serial_DATA_Length = payload.JsonMessageLength + MESSAGEFRAME_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG;
                                 uint8_t* serial_DATA = (uint8_t*)malloc(serial_DATA_Length);
@@ -258,9 +296,13 @@ public:
                                 memcpy(serial_DATA + HEADER_SIZE + PAYLOAD_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG, payload.JsonMessage, payload.JsonMessageLength);
 
                                 ret = send(CD->sock, serial_DATA, serial_DATA_Length, MSG_NOSIGNAL);
+                                free(serial_DATA);
+                                serial_DATA = nullptr;
                             }
 
                             vector<uint8_t*>::iterator iter = CD->send_buf.begin();
+                            free((uint8_t*)(CD->send_buf.at(0)));
+                            CD->send_buf.at(0) = nullptr;
                             CD->send_buf.erase(iter);
                             //int ret = send(CD->sock, &json_data_MAP, sizeof(St_SERVER_OR_CLIENT_JSON_DATA), MSG_NOSIGNAL);
                             if (ret < 0){
@@ -331,6 +373,8 @@ public:
                 if(header.MessageType == MESSAGE_TYPE_SERVER_OR_SIMULATOR_SIGN){
                     messageProcessor::print_header(header);
                     St_Payload_SIGN payload_sign = messageProcessor::parse_SIGN(payload_buf);
+                    free(payload_buf);
+                    payload_buf = nullptr;
                     messageProcessor::print_SIGN(payload_sign);
                     //memcpy(CD->ID, payload_sign.FullDeviceID, PAYLOAD_SIZE_FULL_DEVICE_ID);
                     //if (memcmp(payload_sign.KeyCode, KeyCode, PAYLOAD_SIZE_KEY_CODE) == 0){
@@ -347,12 +391,13 @@ public:
                         whole_log.push_back(access);
                         CD->sign = 1;
 
-
                         St_SERVER_OR_SIMULATOR_SIGN_ACK ack = messageProcessor::set_ACK(0x00, 0x81);
+                        ack.header.Sequence = 0;
                         msg = (uint8_t*)malloc(sizeof(uint8_t)*MESSAGEFRAME_SIZE_ACK);
                         memcpy(msg, &ack, MESSAGEFRAME_SIZE_ACK);
                         CD->send_buf.emplace_back(msg);
                         CD->ack = 1;
+                        CD->pre_recv_seq = 0;
                         //clientMap[CD->ID] = *CD;
                         clientMap.insert(make_pair((char*)CD->ID, CD));;
 
@@ -372,6 +417,8 @@ public:
                 }
                 else if(header.MessageType == MESSAGE_TYPE_SERVER_OR_CLIENT_JSON_DATA){
                     St_Payload_JSON payload_json = messageProcessor::parse_json_payload(payload_buf);
+                    free(payload_buf);
+                    payload_buf = nullptr;
 
                     //messageProcessor::print_json_payload(payload_json);
 
@@ -391,6 +438,9 @@ public:
                         pos.lon = pvd.startVector.Long;
                         pos.elev = pvd.startVector.elev;
                     }
+
+                    messageProcessor::print_json_payload(payload_json);
+                    printf("\n");
 
                     St_SERVER_TX_J2735_DATA server_tx_data;
                     server_tx_data.payload.UTCTime = payload_json.UTCTime;
@@ -421,7 +471,9 @@ public:
                     //}
                     //printf("\n");
 
+                    m_ser_tx_buf.lock();
                     ser_tx_buf.emplace_back(MESSAGEFRAME_SIZE_SERVER_TX_WITHOUT_MSG + 334, full_buf);
+                    m_ser_tx_buf.unlock();
 
                     //DATA_BSM json_bsm = messageProcessor::parse_json_bsm(payload_json.JsonMessage);
                     //messageProcessor::print_json_bsm(json_bsm);
@@ -451,10 +503,14 @@ public:
     bool sign = false;
     bool denied = false;
     bool conn_state = false;
+    bool wait = false;
     char* buf;
     vector<pair<int, uint8_t*>> send_buf;
     vector<pair<int, uint8_t*>> receive_buf;
     mutex m_simulator_denied;
+    mutex m_wait;
+    uint8_t pre_recv_seq;
+    uint8_t pre_send_seq;
 };
 
 class simulatorManager{
@@ -476,6 +532,7 @@ public:
         SD.sign = false;
         SD.denied = false;
         SD.conn_state = false;
+
     }
 
     void connectionManager(simulatorData* SD){
@@ -483,20 +540,33 @@ public:
             if (SD->conn_state == false){
                 connectToSimulator(SD);
             }
-            if(SD->sign == false){
+            else if((SD->sign == false) & (SD->conn_state == true)){
                 signToSimulator(SD);
-                while(SD->denied == false){
-                    printf("denied: %d\n", (int)SD->denied);
-                    sleep(1);
+
+                SD->m_wait.lock();
+                SD->wait = true;
+                SD->m_wait.unlock();
+
+                while(SD->wait){
                 }
-                SD->m_simulator_denied.lock();
-                SD->denied = false;
-                SD->m_simulator_denied.unlock();
-                close(SD->simulator_sock);
-                simulatorManager::init();
-                SD->conn_state = false;
+
+                if(SD->denied == true){
+                    SD->m_simulator_denied.lock();
+                    SD->denied = false;
+                    SD->m_simulator_denied.unlock();
+                    try{
+                        printf("---\n");
+                        close(SD->simulator_sock);
+                        printf("---\n");
+                        simulatorManager::init();
+                    }
+                    catch(int expn){}
+                    SD->conn_state = false;
+                }
+
             }
         }
+        printf("con man end\n");
     }
 
     void signToSimulator(simulatorData* SD){
@@ -504,15 +574,14 @@ public:
         St_SERVER_OR_CLIENT_SIGN sign = messageProcessor::set_SIGN();
         //messageProcessor::print_header(sign.header);
         //messageProcessor::print_SIGN(sign.payload);
-        uint8_t serial_sign[MESSAGEFRAME_SIZE_SIGN];
+        //uint8_t serial_sign[MESSAGEFRAME_SIZE_SIGN];
+        uint8_t* serial_sign = (uint8_t*)malloc(MESSAGEFRAME_SIZE_SIGN);
         memcpy(serial_sign, &sign, MESSAGEFRAME_SIZE_SIGN);
 
-        //for(int i = 0; i<21; i++){
-            //printf("%02x", serial_sign[i]);
-        //}
-        //printf("\n");
-
+        m_ser_tx_buf.lock();
         ser_tx_buf.emplace_back(MESSAGEFRAME_SIZE_SIGN, serial_sign);
+        m_ser_tx_buf.unlock();
+        SD->pre_send_seq = 0;
     }
 
     void run(){
@@ -521,7 +590,6 @@ public:
     }
 
     void work(simulatorData* SD){
-
 
         simulatorManager::init();
         //simulatorManager::connectToSimulator(SD);
@@ -550,20 +618,21 @@ public:
 
     void connectToSimulator(simulatorData* SD){
         int ret;
-        printf("connecting to simulator...\n");
-        while(1){
+        printf("connecting to simulator...  \n");
+        //while(1){
             ret = connect(SD->simulator_sock, (struct sockaddr *)&(SD->simulator_addr), sizeof(SD->simulator_addr));
             if(ret == -1){
                 perror("simulator connect ");
-                //init();
+                //close(SD->simulator_sock);
+                init();
             }
             else if(ret == 0){
                 printf("connect to simulator success\n");
                 SD->conn_state = true;
-                break;
+                //break;
             }
             sleep(1);
-        }
+        //}
     }
 
     void sendToSimulator(simulatorData* SD){
@@ -582,12 +651,20 @@ public:
                 vector<pair<int, uint8_t*>>::iterator iter = ser_tx_buf.begin();
                 clock_gettime(CLOCK_MONOTONIC, &begin);
                 try{
+                    m_ser_tx_buf.lock();
                     int msg_len = ser_tx_buf.at(0).first;
                     uint8_t* msg = (uint8_t*)malloc(msg_len);
                     memcpy(msg, ser_tx_buf.at(0).second, msg_len);
+                    free((uint8_t*)ser_tx_buf.at(0).second);
+                    ser_tx_buf.at(0).second = nullptr;
+                    ser_tx_buf.erase(iter);
+                    m_ser_tx_buf.unlock();
+
                     St_Header header = messageProcessor::parse_header(msg);
 
-        //printf("sendToSimulator\n");
+                    //printf("sendToSimulator\n");
+                    //messageProcessor::print_header(header);
+
                     //for(int i = 0; i<msg_len; i++){
                         //printf("%02x", msg[i]);
                     //}
@@ -599,15 +676,21 @@ public:
                         //}
                         //printf("\n");
                         int ret = send(SD->simulator_sock, msg, msg_len, MSG_NOSIGNAL);
+                        free(msg);
+                        msg = nullptr;
                     }
                     else if (SD->sign == 1){
                         //int serial_DATA_Length = payload.JsonMessageLength + MESSAGEFRAME_SIZE_SERVER_OR_CLIENT_JSON_DATA_WITHOUT_MSG;
                         int ret = send(SD->simulator_sock, msg, msg_len, MSG_NOSIGNAL);
+                        free(msg);
+                        msg = nullptr;
                         //int ret = send(CD->sock, &json_data_MAP, sizeof(St_SERVER_OR_CLIENT_JSON_DATA), MSG_NOSIGNAL);
                         if (ret < 0){
                             perror("send error");
-                            throw -1;
-                            break;
+                            SD->conn_state = false;
+                            SD->sign = false;
+                            //throw -1;
+                            //break;
                         }
                         else{
 
@@ -617,7 +700,6 @@ public:
                         printf("[Simulator Sign failed]\n");
                         //printf("[Simulator Service Code: %s]\n", SIGN_CODE[SD->sign_code]);
                     }
-                    ser_tx_buf.erase(iter);
 
                 }
                 catch(int expn){
@@ -648,6 +730,8 @@ public:
 
                     if(header.MessageType == MESSAGE_TYPE_SERVER_OR_SIMULATOR_SIGN_ACK){
                         St_Payload_ACK payload = messageProcessor::parse_Payload_ACK(payload_buf);
+                        free(payload_buf);
+                        payload_buf = nullptr;
                         messageProcessor::print_ACK(payload);
                         printf("Code: %d\n", (int)payload.Code);
                         if(payload.Code == 0x00){
@@ -669,37 +753,54 @@ public:
                             }
                             printf("simulator sign failed: %s\n", SIGN_CODE[SD->sign_code]);
                         }
+
+                        SD->m_wait.lock();
+                        SD->wait = false;
+                        SD->m_wait.unlock();
                     }
-                    else if(header.MessageType == MESSAGE_TYPE_SIMULATOR_TX_J2735_DATA){
-                        St_Payload_SIMULATOR_TX_J2735_DATA payload = messageProcessor::parse_SIMULATOR_TX_payload(payload_buf);
-                        uint8_t* full_buf = (uint8_t*)malloc(HEADER_SIZE + header.PayloadLength);
+                    else if(header.MessageType == MESSAGE_TYPE_SIMULATOR_TX_J2735_DATA & SD->sign == true){
+                        if (header.Sequence == SD->pre_recv_seq){
 
-                        memcpy(full_buf, header_buf, HEADER_SIZE);
-                        memcpy(full_buf + HEADER_SIZE, payload_buf, header.PayloadLength);
-
-                        m_sim_tx_buf.lock();
-                        sim_tx_buf.emplace_back(HEADER_SIZE + header.PayloadLength, full_buf);
-                        m_sim_tx_buf.unlock();
-
-                        if (payload.MessageID == MESSAGE_ID_VALUE_MAP){
-                            printf("[SERVER]: recv MAP from sim => ");
                         }
-                        else if(payload.MessageID == MESSAGE_ID_VALUE_SPAT){
-                            printf("[SERVER]: recv SPAT from sim => ");
+                        else{
+                            St_Payload_SIMULATOR_TX_J2735_DATA payload = messageProcessor::parse_SIMULATOR_TX_payload(payload_buf);
+
+                            uint8_t* full_buf = (uint8_t*)malloc(HEADER_SIZE + header.PayloadLength);
+
+                            memcpy(full_buf, header_buf, HEADER_SIZE);
+                            memcpy(full_buf + HEADER_SIZE, payload_buf, header.PayloadLength);
+
+                            free(payload_buf);
+                            payload_buf = nullptr;
+
+                            if (payload.MessageID == MESSAGE_ID_VALUE_MAP){
+                                printf("[SERVER]: recv MAP from sim => ");
+                            }
+                            else if(payload.MessageID == MESSAGE_ID_VALUE_SPAT){
+                                printf("[SERVER]: recv SPAT from sim => ");
+                            }
+                            messageProcessor::print_SIMULATOR_TX_payload(payload);
+                            printf("\n");
+
+                            m_sim_tx_buf.lock();
+                            sim_tx_buf.emplace_back(HEADER_SIZE + header.PayloadLength, full_buf);
+                            m_sim_tx_buf.unlock();
+
                         }
-                        messageProcessor::print_SIMULATOR_TX_payload(payload);
                     }
                 }
                 else if(ret == 0){
                     if(SD->sign == 1){
                         printf("simulator connection error\n");
                         SD->conn_state = false;
+                        SD->sign = false;
                         //close(SD->simulator_sock);
                         SD->sign = 0;
                     }
                     else{
                         printf("simulator sign denied\n");
                         SD->conn_state = false;
+                        SD->sign = false;
                         //close(SD->simulator_sock);
                     }
                     //break;
@@ -842,6 +943,10 @@ public:
 int main(){
 
     size_t siz = messageProcessor::ConvertHexStrToArray(tmp, 334, encodedMessage_sample);
+    JO_MAP = json_object_from_file("sample_MAP.json");
+    JO_SPAT = json_object_from_file("sample_SPAT.json");
+
+
     //for(int i = 0; i<334; i++){
         //printf("%02x", encodedMessage_sample[i]);
     //}
@@ -849,7 +954,7 @@ int main(){
     server MyServer;
     MyServer.init();
     MyServer.start();
-    
+
     //simulatorManager Simulator;
     //Simulator.init();
     //Simulator.run();
@@ -864,4 +969,3 @@ int main(){
     //St_SERVER_OR_CLIENT_JSON_DATA json_data_MAP = messageProcessor::set_JSON_DATA_MAP();
     //uint8_t* serial_Json_DATA = messageProcessor::serialize_JSON_DATA(json_data_MAP);
 }
-

@@ -59,8 +59,14 @@
 										"data":[
 											0
 										],
-										"dWidth":0,
-										"dElevation":0
+										"dWidth":{
+											"x":0,
+											"y":0
+										},
+										"dElevation":{
+											"x":0,
+											"y":0
+										}
 									}
 								}
 							]
@@ -129,12 +135,8 @@
 	},
 	"restrictionList":[
 		{
-			"id":0,
-			"users":[
-				{
-					"basicType":0
-				}
-			]
+			"id":
+			""
 		}
-	]	
+	]
 }
